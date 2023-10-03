@@ -1,6 +1,6 @@
 import {OpenAI} from 'openai'
 
-const openaiApiKey = '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'; 
+const openaiApiKey = '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'; 
 
 const translateText = async (text, languages) => {
   try {
