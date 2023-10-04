@@ -5,6 +5,7 @@ const openaiApiKey = process.env.REACT_APP_API_KEY;
 const translateText = async (text, languages) => {
   try {
 
+
     const openai = new OpenAI({
       apiKey: openaiApiKey,
       dangerouslyAllowBrowser: true
@@ -25,7 +26,7 @@ const translateText = async (text, languages) => {
           }
         ],
         temperature: 0,
-        max_tokens: 600,
+        max_tokens: 100000,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,
