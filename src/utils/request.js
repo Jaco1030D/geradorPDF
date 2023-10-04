@@ -3,7 +3,6 @@ import {OpenAI} from 'openai'
 const openaiApiKey = process.env.REACT_APP_API_KEY; 
 
 const translateText = async (text, languages) => {
-  
   try {
 
     const openai = new OpenAI({
