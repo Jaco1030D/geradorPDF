@@ -36,13 +36,6 @@ function App() {
       labelsChecked.push(valorDoLabel)
     });
 
-    if (labelsChecked.length === 0) {
-
-      setText("Escolha o idioma para tradução")
-
-      return
-    }
-
     setLoading(true)
 
     const {message, countWord} = await translatePDFGoogle(file, namePDF, labelsChecked)
