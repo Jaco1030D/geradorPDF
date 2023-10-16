@@ -74,7 +74,7 @@ function App() {
           <label>Para qual nome gostaria de renomear:</label>
           <input id='name' type='text' value={namePDF} onChange={(e) => setNamePDF(e.target.value)} />
           <label>Para qual idioma quer traduzir seu pdf?</label>
-            <select name='select'>
+            <select name='select' multiple className='multiselect'>
               {languages.map((item, index) => (
                 <option key={index}>{item}</option>
               )
