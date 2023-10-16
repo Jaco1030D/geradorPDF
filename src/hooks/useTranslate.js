@@ -5,6 +5,7 @@ import { pdfjs } from 'react-pdf';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 
 import translateText from '../utils/request';
+import translateTextGoogle from '../utils/requestGoogle';
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -63,8 +64,6 @@ export const useTranslate = () => {
 
       let TextTranslated = {}
 
-      console.log(text);
-
       TextTranslated = await translateText(text, languages)
 
       console.log(TextTranslated);
@@ -103,13 +102,71 @@ export const useTranslate = () => {
         doc.save(name + '.pdf')
     }
 
-    const translatePDF = async (FilePDF, languages, namePDF) => {
+    const codingLanguages = (languages) => {
+
+      const languageCodeMapping = {
+        'ingles': 'en',
+        'espanhol': 'es',
+        'frances': 'fr',
+        'italiano': 'it',
+        'portugues': 'pt',
+      };
+
+      const languageCodes = languages.map(language => {
+        if (languageCodeMapping[language.toLowerCase()]) {
+          return languageCodeMapping[language.toLowerCase()];
+        } else {
+          return language;
+        }
+      });
+    
+      return languageCodes;
+    
+
+    }
+
+    const downloadPDF = (namePDF, fileBuffer, language) =>{
+      const blob = new Blob([fileBuffer]);
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = namePDF + '-'+ language +'-.pdf';
+        link.click();
+    }
+
+    const translatePDFGoogle = async (FilePDF, namePDF, languages) => {
 
       let message = ''
 
       const res = await getTextFromPDF(FilePDF)
 
-      console.log(res);
+      const countWord = getCountWord(res)
+
+      const languagesCoded = codingLanguages(languages)
+
+      let response
+
+      languagesCoded.forEach(async language => {
+        
+        response = await translateTextGoogle(FilePDF, language)
+
+        downloadPDF(namePDF, response.data, language)
+
+      });
+
+
+      return {
+        countWord,
+        message
+      }
+
+    }
+
+    const translatePDF = async (FilePDF, languages, namePDF) => {
+
+      let message = ''
+
+      const res = await getTextFromPDF(FilePDF)
 
       const countWord = getCountWord(res)
 
@@ -144,6 +201,8 @@ export const useTranslate = () => {
         getTextFromPDF,
         getTranslatedText,
         TextForPDF,
-        translatePDF
+        translatePDF,
+        translatePDFGoogle,
+        codingLanguages
     }
 }
