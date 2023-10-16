@@ -125,13 +125,16 @@ export const useTranslate = () => {
 
     }
 
-    const downloadPDF = (namePDF, fileBuffer, language) =>{
-      const blob = new Blob([fileBuffer]);
+    const downloadPDF = async (namePDF, fileBuffer, language) =>{
 
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = namePDF + '-'+ language +'-.pdf';
-        link.click();
+      const blob = await new Blob([fileBuffer]);
+
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = namePDF + '-'+ language +'-.pdf';
+      link.click();
+      link.remove();
+      
     }
 
     const translatePDFGoogle = async (FilePDF, namePDF, languages) => {
