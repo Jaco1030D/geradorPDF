@@ -36,6 +36,13 @@ function App() {
       labelsChecked.push(valorDoLabel)
     });
 
+    if (labelsChecked.length === 0) {
+
+      setText("Escolha o idioma para tradução")
+
+      return
+    }
+
     setLoading(true)
 
     const {message, countWord} = await translatePDFGoogle(file, namePDF, labelsChecked)
@@ -67,7 +74,7 @@ function App() {
           <label>Para qual nome gostaria de renomear:</label>
           <input id='name' type='text' value={namePDF} onChange={(e) => setNamePDF(e.target.value)} />
           <label>Para qual idioma quer traduzir seu pdf?</label>
-            <select name='select' multiple className='multiselect'>
+            <select name='select'>
               {languages.map((item, index) => (
                 <option key={index}>{item}</option>
               )

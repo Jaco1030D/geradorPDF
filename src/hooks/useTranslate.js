@@ -150,7 +150,7 @@ export const useTranslate = () => {
         
         response = await translateTextGoogle(FilePDF, language)
 
-        downloadPDF(namePDF, response.data, language)
+        await downloadPDF(namePDF, response.data, language)
 
       });
 
