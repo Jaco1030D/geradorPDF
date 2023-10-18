@@ -7,6 +7,8 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 import translateText from '../utils/request';
 import translateTextGoogle from '../utils/requestGoogle';
 
+import {PDFDocument} from 'pdf-lib'
+
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export const useTranslate = () => {
@@ -50,6 +52,136 @@ export const useTranslate = () => {
 
           });
 
+    }
+
+    const numsArray = (initial, num) => {
+      const values = [];
+
+      for (let i = initial; i <= num; i++) {
+        values.push(i);
+      }
+
+      return values
+    }
+
+    const splitPagesPDF = async (FilePDF) => {
+      return new Promise((resolve, reject) => {
+
+        const reader = new FileReader();
+    
+        reader.onloadend = async function () {
+
+          try {
+
+            const typedArray = new Uint8Array(reader.result);
+
+            const pdf = await PDFDocument.load(typedArray);
+
+            const numPages = pdf.getPageCount();
+
+            const middlePage = Math.ceil(numPages / 2);
+
+            const firstHalfPdf = await PDFDocument.create();
+            
+            const firstHalfPagesNum = numsArray(0, middlePage - 1)
+            
+            const firstHalfPages = await firstHalfPdf.copyPages(pdf, firstHalfPagesNum);
+
+            firstHalfPages.forEach((page) => {
+            
+              firstHalfPdf.addPage(page);
+            
+            });
+
+            const secondHalfPdf = await PDFDocument.create();
+
+            const secondHalfPagesNum = numsArray(middlePage, numPages - 1)
+
+            const secondHalfPages = await secondHalfPdf.copyPages(pdf, secondHalfPagesNum);
+
+
+            secondHalfPages.forEach((page) => {
+
+              secondHalfPdf.addPage(page);
+            
+            });
+
+            const first = await firstHalfPdf.save();
+
+            const second = await secondHalfPdf.save();
+
+            resolve({first, second})
+
+          } catch (error) {
+
+            reject(error);
+
+          }
+
+        };
+    
+        reader.readAsArrayBuffer(FilePDF);
+
+      });
+    } 
+    
+
+    const halfPdf = async (FilePdf) => {
+
+      const res = await splitPagesPDF(FilePdf)
+
+      const first = res.first
+
+      const second = res.second
+
+      const pdfBlob1 = new Blob([first], { type: 'application/pdf' });
+
+      const pdfFile1 = new File([pdfBlob1], 'nome_do_arquivo.pdf', { type: 'application/pdf' });
+
+      const pdfBlob2 = new Blob([second], { type: 'application/pdf' });
+
+      const pdfFile2 = new File([pdfBlob2], 'nome_do_arquivo.pdf', { type: 'application/pdf' });
+
+      console.log(pdfFile1, pdfFile2);
+
+      downloadPDF('teste', first , 'parte1')
+      
+      downloadPDF('teste', second , 'parte2')
+
+      const {mergedPdfBytes} = await mergePDF(first, second)
+
+      downloadPDF('pdfcompleto', mergedPdfBytes, 'completão')
+
+    }
+
+    const mergePDF = async (pdf1, pdf2) => {
+      try {
+
+        const pdfDoc1 = await PDFDocument.load(pdf1);
+        
+        const pdfDoc2 = await PDFDocument.load(pdf2);
+
+        const mergedPdf = await PDFDocument.create();
+
+        const copiedPages1 = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+        copiedPages1.forEach((page) => {
+          mergedPdf.addPage(page);
+        });
+
+        const copiedPages2 = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+        copiedPages2.forEach((page) => {
+          mergedPdf.addPage(page);
+        })
+
+        const mergedPdfBytes = await mergedPdf.save();
+
+        return {mergedPdfBytes};
+      
+      } catch (error) {
+        
+        console.log(error);
+
+      }
     }
 
     const getCountWord = (text) => {
@@ -130,7 +262,7 @@ export const useTranslate = () => {
       const blob = await new Blob([fileBuffer]);
 
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = await URL.createObjectURL(blob);
       link.download = namePDF + '-'+ language +'-.pdf';
       link.click();
       link.remove();
@@ -145,19 +277,38 @@ export const useTranslate = () => {
 
       const countWord = getCountWord(res)
 
+      const {first, second} = await splitPagesPDF(FilePDF)
+
+      const pdfBlob1 = new Blob([first], { type: 'application/pdf' });
+
+      const pdfFile1 = new File([pdfBlob1], 'first.pdf', { type: 'application/pdf' });
+
+      const pdfBlob2 = new Blob([second], { type: 'application/pdf' });
+
+      const pdfFile2 = new File([pdfBlob2], 'second.pdf', { type: 'application/pdf' });
+
+
       const languagesCoded = codingLanguages(languages)
 
-      let response
+      let responseArchive1
 
-      languagesCoded.forEach(async language => {
+      let responseArchive2
+
+      languagesCoded.forEach(async language =>  {
+
+        responseArchive1 = await translateTextGoogle(pdfFile1, language)
+
+        console.log(responseArchive1);
         
-        response = await translateTextGoogle(FilePDF, language)
+        responseArchive2 = await translateTextGoogle(pdfFile2, language)
 
-        await downloadPDF(namePDF, response.data, language)
+        const { mergedPdfBytes } = await mergePDF(responseArchive1.data, responseArchive2.data)
 
+        downloadPDF(namePDF, mergedPdfBytes , language)
+        
       });
-
-
+      
+      
       return {
         countWord,
         message
@@ -206,6 +357,7 @@ export const useTranslate = () => {
         TextForPDF,
         translatePDF,
         translatePDFGoogle,
-        codingLanguages
+        codingLanguages,
+        halfPdf
     }
 }

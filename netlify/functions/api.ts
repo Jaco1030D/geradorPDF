@@ -37,6 +37,7 @@ async function quickStart(fileBuffer, language) {
     parent: `projects/${projectId}/locations/us-central1`,
     documentInputConfig,
     targetLanguageCode: language,
+    isTranslateNativePdfOnly: true,
   };
 
   try {
@@ -52,6 +53,7 @@ async function quickStart(fileBuffer, language) {
     
   } catch (err) {
     console.error('Erro ao traduzir:', err);
+    return
   }
 }
 function parseMultipartForm(event): Promise<Fields> {

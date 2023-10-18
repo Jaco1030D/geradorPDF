@@ -15,6 +15,7 @@
     "multiselect-react-dropdown": "^2.0.25",
     "netlify-cli": "^16.7.0",
     "openai": "^4.0.0",
+    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^3.11.174",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

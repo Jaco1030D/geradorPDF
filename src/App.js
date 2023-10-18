@@ -1,6 +1,7 @@
 import './App.css';
 import { useTranslate } from './hooks/useTranslate';
 import { useState } from 'react';
+import { PDFDocument, rgb } from 'pdf-lib';
 
 const languages = [
   'ingles',
@@ -11,7 +12,7 @@ const languages = [
 ]
 
 function App() {
-  const { translatePDFGoogle} = useTranslate()
+  const { translatePDFGoogle, halfPdf} = useTranslate()
   const [wordsNum, setWordsNum] = useState()
   const [text, setText] = useState('');
   const [file, setFile] = useState()
@@ -20,6 +21,8 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    // halfPdf(file)
 
     setWordsNum('')
 
